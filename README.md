@@ -1,7 +1,16 @@
-# SaleAPP POS
+# Frozen Shop POS
 
-Offline-first, mobile-first Point of Sale as a static PWA (no build step).
+Offline-first, mobile-first Point of Sale for frozen food shops, as a static PWA (no build step).
 HTML5 · ES modules · jQuery · Bootstrap 5 · Bootstrap Icons · IndexedDB · Service Worker · eposwala login API.
+
+## Frozen food features
+
+- **Starter categories** for Pakistani frozen food shops: Chicken, Nuggets & Fingers, Kababs & Patties, Samosas & Rolls, Parathas & Rotis, Fries & Potato, Seafood, Vegetables, Ice Cream & Desserts, Ready Meals, Packaging & Supplies. Add them from *Products → Categories*.
+- **Frozen product details**: brand, pack size, storage temperature (default -18 °C), shelf life in days, halal certified flag. Shelf life pre-fills expiry dates in batches.
+- **Batches & expiry** (*Inventory → Batches & Expiry*): lot number, production date, expiry date, quantity. Dashboard alerts for expired batches and batches expiring within 7 days. Closing a batch marks it sold out or disposed. Batches are food-safety records only; stock quantities still come from purchases, sales and adjustments.
+- **Cold chain log** (*Inventory → Cold Chain Log*): freezer or cold room temperature readings with notes. Readings warmer than -18 °C are flagged on the page and on the dashboard, and a unit with no reading in 24 hours is marked "Check".
+
+Food licensing, halal certification and cold-chain requirements depend on the province and must be confirmed with the relevant food authority (for example, the Punjab Food Authority or Sindh Food Authority) and PSQCA.
 
 ## Features
 

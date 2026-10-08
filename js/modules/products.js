@@ -5,6 +5,7 @@ import { money, pager } from '../core/views.js';
 import * as Auth from '../services/auth.js';
 import * as Catalog from '../services/catalog.js';
 import * as Posting from '../services/posting.js';
+import * as Frozen from '../services/frozen.js';
 import * as Scanner from '../scanner/scanner.js';
 
 const $ = window.jQuery;
@@ -39,6 +40,12 @@ export async function editProduct(product = null, prefill = {}) {
       <div class="col-4"><label class="form-label">Purchase price</label><input name="purchasePrice" class="form-control" inputmode="decimal" value="${p.purchasePrice ?? ''}"></div>
       <div class="col-4"><label class="form-label">Sale price</label><input name="salePrice" class="form-control" inputmode="decimal" value="${p.salePrice ?? ''}"></div>
       <div class="col-4"><label class="form-label">Wholesale</label><input name="wholesalePrice" class="form-control" inputmode="decimal" value="${p.wholesalePrice ?? ''}"></div>
+      <div class="col-12"><hr class="my-1"><div class="small fw-semibold text-body-secondary"><i class="bi bi-snow me-1"></i>Frozen food details</div></div>
+      <div class="col-6 col-md-4"><label class="form-label">Brand</label><input name="brand" class="form-control" maxlength="60" value="${esc(p.brand)}" placeholder="e.g. Dawn, Quick Foods"></div>
+      <div class="col-6 col-md-4"><label class="form-label">Pack size</label><input name="packSize" class="form-control" maxlength="40" value="${esc(p.packSize)}" placeholder="e.g. 1 kg, 20 pcs"></div>
+      <div class="col-6 col-md-2"><label class="form-label">Store at (°C)</label><input name="storageTemp" class="form-control" inputmode="decimal" value="${p.storageTemp ?? -18}"></div>
+      <div class="col-6 col-md-2"><label class="form-label">Shelf life (days)</label><input name="shelfLifeDays" class="form-control" inputmode="numeric" value="${p.shelfLifeDays ?? ''}"></div>
+      <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="halal" id="pr-halal" ${p.halal ? 'checked' : ''}><label class="form-check-label" for="pr-halal">Halal certified</label></div></div>
       <div class="col-12"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="trackStock" id="pr-track" ${p.trackStock !== false ? 'checked' : ''}><label class="form-check-label" for="pr-track">Track stock (turn off for services)</label></div></div>
       <div class="col-4 stock-f"><label class="form-label">Opening stock</label><input name="openingStock" class="form-control" inputmode="decimal" value="${p.openingStock ?? ''}"></div>
       <div class="col-4 stock-f"><label class="form-label">Minimum stock</label><input name="minStock" class="form-control" inputmode="decimal" value="${p.minStock ?? ''}"></div>
@@ -80,9 +87,16 @@ async function manageCategories() {
     return `<div class="list-row"><div class="main"><div class="title">${esc(c.name)}</div><div class="sub">${n} product(s)</div></div>
       <button class="btn btn-sm btn-light btn-cat-edit" data-id="${esc(c.id)}" aria-label="Rename"><i class="bi bi-pencil"></i></button>
       <button class="btn btn-sm btn-light btn-cat-del" data-id="${esc(c.id)}" aria-label="Delete"><i class="bi bi-trash"></i></button></div>`;
-  }).join('') || UI.emptyState('No categories yet', 'tags');
+  }).join('') || UI.emptyState('No categories yet', 'tags', '<button class="btn btn-primary btn-sm mt-3 btn-add-frozen"><i class="bi bi-snow me-1"></i>Add frozen food categories</button>');
   const m = UI.modal({ title: 'Categories', body: `<form class="input-group mb-3 cat-add"><input class="form-control" placeholder="New category name" required><button class="btn btn-primary">Add</button></form><div class="list-card cat-list">${render()}</div>` });
   const refresh = () => m.$el.find('.cat-list').html(render());
+  m.$el.on('click', '.btn-add-frozen', async () => {
+    try {
+      const n = await Frozen.addFrozenCategories();
+      UI.toast(n ? `${n} categories added` : 'Frozen food categories already exist');
+      refresh();
+    } catch (err) { UI.toastError(err); }
+  });
   m.$el.find('.cat-add').on('submit', async (e) => {
     e.preventDefault();
     const $i = $(e.target).find('input');
@@ -157,7 +171,10 @@ async function productActions(p, redraw) {
     body: `<div class="row small mb-3">
         <div class="col-6">Sale: <b>${money(p.salePrice)}</b></div><div class="col-6">Wholesale: <b>${money(p.wholesalePrice)}</b></div>
         <div class="col-6">Cost: <b>${money(p.purchasePrice)}</b></div><div class="col-6">Stock: <b>${p.trackStock === false ? 'n/a' : fmtQty(p.stock) + ' ' + esc(p.unit)}</b></div>
-        <div class="col-6">Margin: <b>${p.salePrice ? fmtNum(((p.salePrice - p.purchasePrice) / p.salePrice) * 100) + '%' : '—'}</b></div><div class="col-6">Min stock: <b>${fmtQty(p.minStock || 0)}</b></div></div>
+        <div class="col-6">Margin: <b>${p.salePrice ? fmtNum(((p.salePrice - p.purchasePrice) / p.salePrice) * 100) + '%' : '—'}</b></div><div class="col-6">Min stock: <b>${fmtQty(p.minStock || 0)}</b></div>
+        <div class="col-6">Brand: <b>${esc(p.brand || '—')}</b></div><div class="col-6">Pack: <b>${esc(p.packSize || '—')}</b></div>
+        <div class="col-6">Store at: <b>${p.storageTemp ?? -18} °C</b></div><div class="col-6">Shelf life: <b>${p.shelfLifeDays ? p.shelfLifeDays + ' days' : '—'}</b></div>
+        <div class="col-12">${p.halal ? '<span class="badge text-bg-success"><i class="bi bi-patch-check me-1"></i>Halal certified</span>' : '<span class="badge text-bg-secondary">Halal not marked</span>'}</div></div>
       <div class="d-grid gap-2">
         <button class="btn btn-primary btn-edit"><i class="bi bi-pencil me-1"></i>Edit product</button>
         <a class="btn btn-outline-secondary" href="#/stock/${encodeURIComponent(p.id)}"><i class="bi bi-clock-history me-1"></i>Stock ledger</a>

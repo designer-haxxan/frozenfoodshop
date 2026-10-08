@@ -577,6 +577,8 @@ export async function saveProduct(data) {
     const trackStock = data.trackStock !== false;
     const p = { ...(old || { createdAt: now, stock: 0 }), id, name, nameLc: lc(name), sku, barcode, categoryId: data.categoryId || '', unit: clean(data.unit, 20) || 'pcs',
       purchasePrice, salePrice, wholesalePrice, minStock: round3(num(data.minStock)), openingStock: trackStock ? openingStock : 0, trackStock,
+      brand: clean(data.brand, 60), packSize: clean(data.packSize, 40), storageTemp: data.storageTemp === '' || data.storageTemp == null ? -18 : round2(num(data.storageTemp, -18)),
+      shelfLifeDays: Math.max(0, Math.round(num(data.shelfLifeDays))), halal: data.halal === true || data.halal === 'on' || data.halal === 1 ? 1 : 0,
       image: data.image === undefined ? (old?.image || '') : data.image, active: data.active === false ? 0 : 1, updatedAt: now };
     const openRef = 'open:' + id;
     const [openMove] = await t.getAllByIndex('stockMoves', 'refId', openRef);

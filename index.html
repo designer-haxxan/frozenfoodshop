@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Offline-first point of sale with sales, purchases, stock, accounts and reports.">
-  <meta name="theme-color" content="#4f46e5">
+  <meta name="description" content="Offline point of sale for frozen food shops: batch expiry, freezer temperature log, sales, stock and accounts.">
+  <meta name="theme-color" content="#0369a1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src 'self' https://cdn.jsdelivr.net; img-src 'self' data: blob:; media-src 'self' blob: mediastream:; connect-src 'self' https://eposwala.com https://cdn.jsdelivr.net; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="SaleAPP POS">
+  <meta name="apple-mobile-web-app-title" content="Frozen Shop POS">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -17,13 +17,13 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource-variable/inter@5.1.0/index.css">
   <link rel="stylesheet" href="css/app.css">
-  <title>SaleAPP POS</title>
+  <title>Frozen Shop POS</title>
 </head>
 <body>
   <!-- Splash / loading screen -->
   <div id="splash">
     <div class="splash-logo"><img src="icons/icon-192.png" alt=""></div>
-    <div class="splash-name mt-3">SaleAPP POS</div>
+    <div class="splash-name mt-3">Frozen Shop POS</div>
     <div class="splash-bar" role="status"><span class="visually-hidden">Loading</span></div>
     <div id="splash-error" class="text-danger small mt-3 px-4 text-center"></div>
   </div>
@@ -36,13 +36,14 @@
         <section class="auth-hero">
           <div class="brand-row">
             <div class="brand-mark"><img src="icons/icon-192.png" alt=""></div>
-            <div><div class="name">SaleAPP POS</div><div class="tag">Point of Sale · Inventory · Accounts</div></div>
+            <div><div class="name">Frozen Shop POS</div><div class="tag">Frozen food POS · Batches · Cold chain · Accounts</div></div>
           </div>
           <h1>Run your whole business <span class="grad">from one app.</span></h1>
-          <p class="lead-sm">Sell, buy, track stock and keep your accounts — for any shop, wholesaler or distributor. Works even without internet.</p>
+          <p class="lead-sm">Sell chicken, nuggets, kababs, samosas and parathas. Track batch expiry and freezer temperatures, and keep your accounts. Works even without internet.</p>
           <ul class="feature-chips">
             <li><i class="bi bi-wifi-off"></i>Works offline</li>
-            <li><i class="bi bi-box-seam"></i>Inventory</li>
+            <li><i class="bi bi-snow"></i>Cold-chain log</li>
+            <li><i class="bi bi-calendar-x"></i>Batch &amp; expiry</li>
             <li><i class="bi bi-journal-check"></i>Accounts &amp; ledgers</li>
             <li><i class="bi bi-upc-scan"></i>Barcode</li>
             <li><i class="bi bi-printer"></i>Bluetooth receipts</li>
@@ -112,7 +113,7 @@
   <!-- Application -->
   <div id="view-app" class="d-none">
     <aside id="sidebar" class="d-none d-lg-flex flex-column">
-      <div class="sidebar-brand"><div class="logo"><img src="icons/icon-192.png" alt=""></div> <span id="brand-name">SaleAPP POS</span></div>
+      <div class="sidebar-brand"><div class="logo"><img src="icons/icon-192.png" alt=""></div> <span id="brand-name">Frozen Shop POS</span></div>
       <nav class="nav flex-column flex-grow-1 overflow-auto nav-menu" aria-label="Main"></nav>
     </aside>
     <div class="app-main">

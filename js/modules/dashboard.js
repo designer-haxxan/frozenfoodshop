@@ -8,6 +8,7 @@ import * as Auth from '../services/auth.js';
 import * as Catalog from '../services/catalog.js';
 import * as Posting from '../services/posting.js';
 import * as Backup from '../services/backup.js';
+import * as Frozen from '../services/frozen.js';
 
 const $ = window.jQuery;
 
@@ -108,7 +109,12 @@ export default {
     this.destroy();
     const $el = $(el);
     const u = Auth.user();
-    const [f, bal, wk] = await Promise.all([todayFigures(), Posting.allBalances(), weekFigures()]);
+    const [f, bal, wk, batches, coldLogs] = await Promise.all([todayFigures(), Posting.allBalances(), weekFigures(), Frozen.listBatches(), Frozen.listColdLogs()]);
+    const day = today();
+    const expired = batches.filter((b) => Frozen.expiryStatus(b, day) === 'expired');
+    const expiring = batches.filter((b) => Frozen.expiryStatus(b, day) === 'soon');
+    const warmUnits = Frozen.latestByUnit(coldLogs).filter((l) => Frozen.tempStatus(l.tempC) === 'warn');
+    const coldAlerts = warmUnits.length + (coldLogs.length ? 0 : 1);
     let rec = 0; let pay = 0; let cash = 0;
     for (const [id, b] of bal) {
       if (id.startsWith('C:') && b.balance > 0) rec += b.balance;
@@ -154,7 +160,9 @@ export default {
       </div>
       ${!navigator.onLine ? '<div class="alert alert-secondary py-2 small"><i class="bi bi-wifi-off me-1"></i>You are offline. Everything you do is saved on this device.</div>' : ''}
       <div class="legacy-hint"></div>
-      ${Auth.can('backup.export') && (backupDays === null || backupDays >= 7) ? `<div class="alert alert-warning py-2 small d-flex align-items-center gap-2"><i class="bi bi-shield-exclamation"></i><div class="flex-grow-1">${backupDays === null ? 'No backup has been made on this device yet.' : `Last backup was ${backupDays} days ago.`} Your data only lives on this device.</div><a class="btn btn-sm btn-warning" href="#/backup">Back up</a></div>` : ''}
+      ${expired.length || expiring.length ? `<div class="alert alert-${expired.length ? 'danger' : 'warning'} py-2 small d-flex align-items-center gap-2"><i class="bi bi-calendar-x"></i><div class="flex-grow-1"><b>${expired.length} expired</b> and <b>${expiring.length}</b> expiring within ${Frozen.EXPIRY_WARN_DAYS} days. Check the batches before selling.</div><a class="btn btn-sm ${expired.length ? 'btn-danger' : 'btn-warning'}" href="#/batches">View</a></div>` : ''}
+      ${warmUnits.length ? `<div class="alert alert-danger py-2 small d-flex align-items-center gap-2"><i class="bi bi-thermometer-high"></i><div class="flex-grow-1"><b>${warmUnits.map((l) => esc(l.unit)).join(', ')}</b> ${warmUnits.length > 1 ? 'are' : 'is'} above ${Frozen.FREEZER_LIMIT_C} °C. Check the freezer and food safety.</div><a class="btn btn-sm btn-danger" href="#/coldchain">Log</a></div>` : ''}
+      ${Auth.can('backup.export') && (backupDays === null || backupDays >= 7) ?`<div class="alert alert-warning py-2 small d-flex align-items-center gap-2"><i class="bi bi-shield-exclamation"></i><div class="flex-grow-1">${backupDays === null ? 'No backup has been made on this device yet.' : `Last backup was ${backupDays} days ago.`} Your data only lives on this device.</div><a class="btn btn-sm btn-warning" href="#/backup">Back up</a></div>` : ''}
 
       <div class="section-title"><h2>Business hub</h2></div>
       <div class="row g-2 stagger">
@@ -166,6 +174,8 @@ export default {
         ${tile('#/suppliers', 'truck', 'slate', 'Suppliers', `${suppliers} · payable ${esc(cur())} ${fmtNum(pay)}`, 'purchase.manage')}
         ${tile('#/accounts', 'bank', 'green', 'Accounts', `Cash & bank ${esc(cur())} ${fmtNum(cash)}`, 'account.manage')}
         ${tile('#/vouchers', 'cash-coin', 'amber', 'Cash book', 'Receipts & payments', 'voucher.create')}
+        ${tile('#/batches', 'snow2', expired.length ? 'red' : expiring.length ? 'amber' : 'green', 'Batches & expiry', expired.length ? `${expired.length} expired` : expiring.length ? `${expiring.length} expiring soon` : `${batches.filter((b) => Frozen.expiryStatus(b, day) === 'ok').length} batches good`)}
+        ${tile('#/coldchain', 'thermometer-snow', coldAlerts ? 'red' : 'cyan', 'Cold chain', warmUnits.length ? `${warmUnits.length} unit(s) too warm` : coldLogs.length ? `Last reading ${coldLogs[0].tempC} °C` : 'No readings yet')}
         ${tile('#/returns', 'arrow-return-left', 'red', 'Returns', f.saleReturns ? `${esc(cur())} ${fmtNum(f.saleReturns)} today` : 'Sale & purchase returns')}
         ${tile('#/reports', 'bar-chart-line', 'indigo', 'Reports', 'Sales, stock, profit & ledgers', 'reports.view')}
         ${tile('#/backup', 'cloud-arrow-down', 'cyan', 'Backup', backupDays === null ? 'Not backed up yet' : `Last ${backupDays}d ago`, 'backup.export')}

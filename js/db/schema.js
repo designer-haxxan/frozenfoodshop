@@ -6,13 +6,16 @@ export const DB_NAME = `${CONFIG.APP_ID}_pos`;
 export const LEGACY_DB_NAME = 'saleapp_pos';
 // Version 2 has the same stores as version 1. It exists because a build of another project was briefly deployed
 // here and upgraded phones' databases to v2; opening with v1 would then fail with a VersionError.
-export const DB_VERSION = 2;
+// Version 3 adds the frozen-food stores: production/expiry batches and freezer temperature logs.
+// Never lower this number: phones that opened a newer build keep the higher version.
+export const DB_VERSION = 3;
 
 // Stores that make up the business data (included in backups).
 export const DATA_STORES = [
   'categories', 'products', 'customers', 'suppliers', 'accounts',
   'sales', 'saleItems', 'purchases', 'purchaseItems', 'saleReturns', 'purchaseReturns',
   'vouchers', 'entries', 'stockMoves', 'adjustments', 'holds', 'auditLog', 'meta',
+  'batches', 'coldLogs',
 ];
 
 const STORES = {
@@ -48,6 +51,12 @@ export const SYSTEM_ACCOUNTS = [
   { id: 'expense', name: 'General Expenses', type: 'expense' },
 ];
 
+// Stores added in version 3. Created only if missing, so a fresh install and an upgrade end up identical.
+const STORES_V3 = {
+  batches: { indexes: { productId: 'productId', expiryDate: 'expiryDate', status: 'status' } },
+  coldLogs: { indexes: { at: 'at', unit: 'unit' } },
+};
+
 export function upgrade(db, oldVersion, t) {
   if (oldVersion < 1) {
     for (const [name, def] of Object.entries(STORES)) {
@@ -64,5 +73,12 @@ export function upgrade(db, oldVersion, t) {
     t.objectStore('meta').put({ key: 'createdAt', value: now });
   }
   // v2: no structural change (see DB_VERSION). Extra stores left by that other build are ignored.
-  // Future migrations: if (oldVersion < 3) { ... }
+  if (oldVersion < 3) {
+    for (const [name, def] of Object.entries(STORES_V3)) {
+      if (db.objectStoreNames.contains(name)) continue;
+      const os = db.createObjectStore(name, { keyPath: 'id' });
+      for (const [idx, keyPath] of Object.entries(def.indexes)) os.createIndex(idx, keyPath);
+    }
+  }
+  // Future migrations: if (oldVersion < 4) { ... }
 }

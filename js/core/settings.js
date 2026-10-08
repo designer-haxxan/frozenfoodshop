@@ -5,7 +5,7 @@ const KEY = storageKey('settings');
 const LEGACY_KEY = 'pos.settings'; // shared by older builds on the same origin; copied once as a starting point
 
 export const DEFAULT_SETTINGS = {
-  business: { name: 'My Store', address: '', phone: '', taxNo: '', footer: 'Thank you for your purchase!' },
+  business: { name: 'My Frozen Shop', address: '', phone: '', taxNo: '', footer: 'Thank you for your purchase!' },
   currency: 'Rs',
   taxEnabled: false,
   taxRate: 0,
